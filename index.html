@@ -282,7 +282,7 @@
   .dot{width:7px;height:7px;border-radius:50%;background:#D8D5C9;}
   .dot.active{background:var(--azul-principal);width:18px;border-radius:4px;transition:all .3s ease;}
 
-  /* Quiz — Desafío de Liceito */
+  /* Quiz — Desafío Liceito */
   .quiz-progreso{font-size:.8rem;color:var(--texto-suave);margin-bottom:10px;font-weight:600;}
   .quiz-pregunta{
     background:var(--blanco);border:1px solid #E7E4DA;border-radius:var(--radio);
@@ -371,7 +371,7 @@
     <label for="curso">Curso del estudiante</label>
     <input id="curso" type="text" placeholder="Ej: 4°B">
     <button id="startBtn" disabled>Comenzar el curso</button>
-    <p class="form-note">Tu registro de finalización se confirma al completar el Desafío de Liceito al final del curso.</p>
+    <p class="form-note">Tu registro de finalización se confirma al completar el Desafío Liceito al final del curso.</p>
   </div>
 </div>
 
@@ -583,12 +583,12 @@
     </section>
 
     <!-- ============================================================ -->
-    <!--  DIAPOSITIVA 9 — Desafío de Liceito (quiz + calificación)
+    <!--  DIAPOSITIVA 9 — Desafío Liceito (quiz + calificación)
     -->
     <!-- ============================================================ -->
     <section class="slide" data-narracion="Quiero conocer cómo actuarías frente a algunas situaciones reales.">
       <img src="liceito.png" width="200" height="200" alt="Mi imagen">
-      <div class="eyebrow"> Desafío de Liceito</div>
+      <div class="eyebrow"> Desafío Liceito</div>
       <h2 id="quizTitulo">Ahora te invito a responder algunas situaciones</h2>
       <p class="body-text" id="quizIntro">No es un examen. Es una oportunidad para reflexionar sobre lo aprendido. Al final te daremos una nota que deberás registrar en el formulario de asistencia.</p>
 
@@ -729,7 +729,7 @@
 
   function cambiarSlide(dir){
     if (actual === total - 1 && dir === 1) {
-      alert('¡Gracias por completar el curso! No olvides responder el Desafío de Liceito (diapositiva 9) para quedar registrado.');
+      alert('¡Gracias por completar el curso! No olvides responder el Desafío Liceito (diapositiva 9) para quedar registrado.');
       return;
     }
     actual = Math.min(Math.max(actual + dir, 0), total - 1);
@@ -738,7 +738,7 @@
 
   mostrarSlide(0);
 
-  // ---------- Quiz — Desafío de Liceito ----------
+  // ---------- Quiz — Desafío Liceito ----------
   const NOTA_APROBACION = 80; // porcentaje mínimo, igual al de tu documento original
   const GOOGLE_FORM_ASISTENCIA = 'REEMPLAZA_CON_TU_URL_DE_GOOGLE_FORM';
 
@@ -805,7 +805,7 @@
   function iniciarQuiz(){
     quizIndice = 0;
     quizCorrectas = 0;
-    document.getElementById('quizTitulo').textContent = 'Desafío de Liceito';
+    document.getElementById('quizTitulo').textContent = 'Desafío Liceito';
     document.getElementById('quizIntro').style.display = 'none';
     document.getElementById('quizStartBtn').style.display = 'none';
     renderPreguntaQuiz();
@@ -894,7 +894,7 @@
     const p = document.getElementById('registroNota');
     if (!p) return;
     if (ultimaNota) {
-      p.innerHTML = 'Tu nota del Desafío de Liceito: <strong>' + ultimaNota.correctas + '/' + ultimaNota.total + ' (' + ultimaNota.porcentaje + '%)</strong>. Regístrala en el formulario para confirmar tu participación.';
+      p.innerHTML = 'Tu nota del Desafío Liceito: <strong>' + ultimaNota.correctas + '/' + ultimaNota.total + ' (' + ultimaNota.porcentaje + '%)</strong>. Regístrala en el formulario para confirmar tu participación.';
     } else {
       p.textContent = 'Completa el formulario para dejar constancia de tu participación en la Escuela de Familias.';
     }
