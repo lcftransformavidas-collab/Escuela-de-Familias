@@ -99,6 +99,8 @@
   .card-item .num{color:var(--dorado);font-weight:700;font-family:'Fraunces',serif;font-size:1.1rem;}
   .card-item h3{margin:8px 0 6px;font-size:1rem;color:var(--azul-oscuro);}
   .card-item p{margin:0;font-size:.85rem;color:var(--texto-suave);line-height:1.4;}
+  #faltaSituacionCards .card-item{width:260px;}
+  #faltaSituacionCards .card-item h3{font-family:'Fraunces',serif;font-size:1.15rem;}
 
   .flow{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin:22px 0;}
   .flow-col{background:var(--blanco);border-radius:14px;border:1px solid #E7E4DA;padding:16px;min-width:150px;}
@@ -111,6 +113,10 @@
   .icon-row{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin:26px 0;}
   .icon-item{width:110px;}
   .icon-item .ico{width:46px;height:46px;margin:0 auto 8px;color:var(--azul-principal);}
+  .icon-item .ico-foto{
+    width:64px;height:64px;object-fit:cover;border-radius:50%;margin:0 auto 8px;display:block;
+    border:2px solid var(--dorado);
+  }
   .icon-item p{font-size:.85rem;color:var(--texto-suave);margin:0;}
 
   .quote{font-family:'Fraunces',serif;font-size:1.2rem;color:var(--azul-oscuro);font-style:italic;margin-top:20px;}
@@ -146,6 +152,11 @@
     resize:none;background:var(--blanco);
   }
   .reflexion-input:focus{outline:none;border-color:var(--azul-claro);}
+  .campo-obligatorio{
+    max-width:480px;margin:2px auto 0;font-size:.8rem;color:#B15E4A;font-weight:600;
+    text-align:left;transition:opacity .2s ease;
+  }
+  .campo-obligatorio.oculto{opacity:0;visibility:hidden;height:0;margin:0 auto;}
 
   /* Tarjetas normativas clicables */
   .norm-card{cursor:pointer;transition:border-color .2s ease, transform .15s ease;}
@@ -342,6 +353,10 @@
     .progress-track{margin:0 12px;}
     main{padding:24px 14px 130px;}
     #mascotImg{width:88px;height:88px;}
+    /* La navbar inferior mide ~67px (14px de padding arriba/abajo + botón).
+       Se sube el ancla del mascotWrap para que la mascota no quede
+       encima del botón "Siguiente". */
+    #mascotWrap{bottom:92px;right:14px;}
   }
   /* Diapositiva final negra */
   .slide-negra{
@@ -353,6 +368,45 @@
     color:#fff;
     font-size:clamp(2rem,6vw,3.4rem);
     margin:0;
+  }
+
+  /* ---------- Botón para abrir la infografía ---------- */
+  .btn-infografia{
+    display:block;margin:18px auto 8px;padding:11px 22px;border-radius:22px;
+    border:1.5px solid var(--azul-principal);background:transparent;color:var(--azul-principal);
+    font-weight:600;font-size:.9rem;cursor:pointer;
+  }
+  .btn-infografia:hover{background:var(--azul-principal);color:#fff;}
+
+  /* ---------- Lightbox de la infografía (zoom/pan) ---------- */
+  .infografia-overlay{
+    display:none;position:fixed;inset:0;background:rgba(16,27,41,.92);
+    z-index:200;flex-direction:column;
+  }
+  .infografia-overlay.show{display:flex;}
+  .infografia-toolbar{
+    display:flex;align-items:center;justify-content:flex-end;gap:14px;
+    padding:12px 16px;flex-wrap:wrap;
+  }
+  .infografia-hint{color:#D8D5C9;font-size:.78rem;margin-right:auto;}
+  .infografia-descargar{
+    color:#fff;font-size:.85rem;text-decoration:none;border:1px solid rgba(255,255,255,.4);
+    border-radius:16px;padding:6px 14px;
+  }
+  .infografia-cerrar{
+    background:var(--dorado);border:none;color:var(--azul-oscuro);width:34px;height:34px;
+    border-radius:50%;font-size:1rem;cursor:pointer;font-weight:700;
+  }
+  .infografia-lienzo{
+    flex:1;overflow:hidden;position:relative;
+    touch-action:none; /* el JS controla pellizco y arrastre manualmente */
+    cursor:grab;
+  }
+  .infografia-lienzo.arrastrando{cursor:grabbing;}
+  #infografiaImg{
+    position:absolute;top:50%;left:50%;max-width:none;
+    transform-origin:0 0;
+    user-select:none;-webkit-user-drag:none;
   }
 </style>
 </head>
@@ -398,6 +452,7 @@
       <h2>¿Qué espera usted que aprenda su hijo cuando enfrente un conflicto?</h2>
       <p class="subt">Cada decisión construye convivencia.</p>
       <textarea id="reflexionInicial" class="reflexion-input" rows="2" placeholder="Escribe una palabra o frase corta... (quedará guardada para el cierre)"></textarea>
+      <p class="campo-obligatorio" id="avisoReflexion">✏️ Responde para poder continuar al siguiente paso.</p>
       <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
     </section>
 
@@ -515,6 +570,8 @@
         <p>👆 Toca un paso de la línea para ver en qué consiste.</p>
       </div>
 
+      <button class="btn-infografia" onclick="abrirInfografia()">🔍 Ver infografía completa de la ruta</button>
+
       <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
     </section>
 
@@ -537,22 +594,66 @@
       </div>
 
       <p class="quote">Cada situación recibe una respuesta diferente.</p>
+
+      <div class="case-box" style="text-align:left;">
+        <p style="margin:0 0 8px;">El Liceo considera fundamental que la tipificación de las faltas se realice teniendo en cuenta criterios <strong>atenuantes</strong> y <strong>agravantes</strong> que permitan individualizar la responsabilidad en la comisión de faltas y la participación en situaciones, de manera que se puedan establecer las sanciones a aplicar; cuya reincidencia generará una mayor tipificación o rango en la aplicación de una sanción.</p>
+        <p style="margin:0;font-size:.82rem;color:var(--texto-suave);">Para mayor comprensión, remítase al artículo 32 del Manual de Convivencia (página 76).</p>
+      </div>
+
       <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
     </section>
 
     <!-- ============================================================ -->
-    <!--  DIAPOSITIVA 7 — Rol de la familia
+    <!--  DIAPOSITIVA 7 — Definición de falta y situación
+    -->
+    <!-- ============================================================ -->
+    <section class="slide" data-narracion="Si un estudiante comete una falta o se presenta una situación que afecte la convivencia, cada caso se atenderá siguiendo el procedimiento correspondiente establecido por la institución. Si ocurren ambas al mismo tiempo, primero se atenderá la situación de convivencia y luego la falta.">
+      <div class="eyebrow">Conceptos clave</div>
+      <h2>Definición de falta y situación</h2>
+
+      <div class="cards" id="faltaSituacionCards">
+        <div class="card-item">
+          <h3>Falta</h3>
+          <p>Comportamiento y acciones que van en contra de los reglamentos, parámetros, lineamientos y límites establecidos en el Manual de Convivencia de la institución, y que traen consigo consecuencias en la vida personal y escolar de quien las comete.</p>
+        </div>
+        <div class="card-item">
+          <h3>Situación</h3>
+          <p>Conjunto de circunstancias que se producen consigo mismo o entre las personas en un momento determinado, generando un conflicto que afecta el libre ejercicio de los derechos fundamentales para el desarrollo integral del ser humano y que, por lo tanto, requiere medidas de abordaje y de intervención.</p>
+        </div>
+      </div>
+
+      <p class="quote">👆 Toca el botón de Liceito para conocer qué se atiende primero cuando ambas ocurren a la vez.</p>
+      <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
+    </section>
+
+    <!-- ============================================================ -->
+    <!--  DIAPOSITIVA 8 — Rol de la familia
     -->
     <!-- ============================================================ -->
    <section class="slide" data-narracion="El papel de la familia es fundamental. Escuchar, dialogar y confiar en los canales institucionales fortalece el proceso formativo.">
       <div class="eyebrow">Su rol en casa</div>
       <h2>La familia hace la diferencia</h2>
       <div class="icon-row">
-        <div class="icon-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h14l4 5-4 5H3z"/></svg><p>Escuchar</p></div>
-        <div class="icon-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><p>Informar</p></div>
-        <div class="icon-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.35-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.65-9 9-9 9z"/></svg><p>Acompañar</p></div>
-        <div class="icon-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><p>Respetar el proceso</p></div>
-        <div class="icon-item"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M2 12h20"/></svg><p>Educar con el ejemplo</p></div>
+        <div class="icon-item">
+          <img class="ico-foto" src="Escuchar.jpg" alt="Escuchar" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 5h14l4 5-4 5H3z"/></svg><p>Escuchar</p>
+        </div>
+        <div class="icon-item">
+          <img class="ico-foto" src="Informar.jpg" alt="Informar" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 8v5l3 2"/></svg><p>Informar</p>
+        </div>
+        <div class="icon-item">
+          <img class="ico-foto" src="Acompañar.jpg" alt="Acompañar" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s-7-4.35-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.65-9 9-9 9z"/></svg><p>Acompañar</p>
+        </div>
+        <div class="icon-item">
+          <img class="ico-foto" src="Respetar el proceso.jpg" alt="Respetar el proceso" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg><p>Respetar el proceso</p>
+        </div>
+        <div class="icon-item">
+          <img class="ico-foto" src="Educar.jpg" alt="Educar" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2v20M2 12h20"/></svg><p>Educar con el ejemplo</p>
+        </div>
       </div>
       <p class="quote">La convivencia también se construye desde casa.</p>
       <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
@@ -560,7 +661,7 @@
 
 
     <!-- ============================================================ -->
-    <!--  DIAPOSITIVA 8 — Caso práctico
+    <!--  DIAPOSITIVA 9 — Caso práctico
     -->
     <!-- ============================================================ -->
     <section class="slide" data-narracion="Antes de reaccionar, comprendamos. Cada conflicto puede convertirse en una oportunidad para educar.">
@@ -583,7 +684,7 @@
     </section>
 
     <!-- ============================================================ -->
-    <!--  DIAPOSITIVA 9 — Desafío Liceito (quiz + calificación)
+    <!--  DIAPOSITIVA 10 — Desafío Liceito (quiz + calificación)
     -->
     <!-- ============================================================ -->
     <section class="slide" data-narracion="Quiero conocer cómo actuarías frente a algunas situaciones reales.">
@@ -598,25 +699,10 @@
     </section>
 
     <!-- ============================================================ -->
-    <!--  DIAPOSITIVA 10 — Registro de asistencia
-    -->
-    <!-- ============================================================ -->
-    <section class="slide" id="slideRegistro" data-narracion="Ya casi terminamos. Registra tu asistencia para confirmar que completaste este curso junto a tu familia.">
-      <div class="eyebrow">Registro</div>
-      <h2>Confirma tu asistencia</h2>
-      <img src="Registrar.png" width="200" height="200" alt="Mi imagen">
-
-      <p class="body-text" id="registroNota">Completa el formulario para dejar constancia de tu participación en la Escuela de Familias.</p>
-      <a class="quiz-btn-primario" href="https://forms.gle/uSzw9J4p99M9RF5c8" target="_blank">Registrar mi asistencia →</a>
-      <br>
-      <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
-    </section>
-
-    <!-- ============================================================ -->
     <!--  DIAPOSITIVA 11 — Cierre
     -->
     <!-- ============================================================ -->
-    <section class="slide" data-narracion="Gracias por dedicar este tiempo. Cada conversación, cada ejemplo y cada decisión construyen una mejor convivencia para nuestros estudiantes.">
+    <section class="slide" id="slideCierre" data-narracion="Gracias por dedicar este tiempo. Cada conversación, cada ejemplo y cada decisión construyen una mejor convivencia para nuestros estudiantes.">
       <div class="eyebrow">Cierre</div>
       <h2>Gracias por construir convivencia</h2>
       <img src="Construir.png" width="200" height="200" alt="Mi imagen">
@@ -657,6 +743,21 @@
       <h2>Liceístas de gran corazón</h2>
     </section>
 
+    <!-- ============================================================ -->
+    <!--  DIAPOSITIVA 13 — Registro de asistencia (última)
+    -->
+    <!-- ============================================================ -->
+    <section class="slide" id="slideRegistro" data-narracion="Ya casi terminamos. Registra tu asistencia para confirmar que completaste este curso junto a tu familia.">
+      <div class="eyebrow">Registro</div>
+      <h2>Confirma tu asistencia</h2>
+      <img src="Registrar.png" width="200" height="200" alt="Mi imagen">
+
+      <p class="body-text" id="registroNota">Completa el formulario para dejar constancia de tu participación en la Escuela de Familias.</p>
+      <a class="quiz-btn-primario" href="https://forms.gle/uSzw9J4p99M9RF5c8" target="_blank">Registrar mi asistencia →</a>
+      <br>
+      <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
+    </section>
+
   </main>
 
   <div id="mascotWrap">
@@ -666,6 +767,18 @@
       <button class="bubble-cerrar" onclick="cerrarBurbuja()" aria-label="Cerrar">✕</button>
     </div>
     <img id="mascotImg" src="liceito.png" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2252%22 r=%2238%22 fill=%22%231E3A5F%22/><circle cx=%2236%22 cy=%2246%22 r=%2212%22 fill=%22%23F7F5EF%22/><circle cx=%2264%22 cy=%2246%22 r=%2212%22 fill=%22%23F7F5EF%22/><circle cx=%2236%22 cy=%2246%22 r=%225%22 fill=%22%23101B29%22/><circle cx=%2264%22 cy=%2246%22 r=%225%22 fill=%22%23101B29%22/><polygon points=%2250,54 44,64 56,64%22 fill=%22%23EEA22C%22/></svg>'">
+  </div>
+
+  <!-- ============ LIGHTBOX: infografía de la ruta de atención ============ -->
+  <div id="infografiaOverlay" class="infografia-overlay" onclick="if(event.target===this) cerrarInfografia()">
+    <div class="infografia-toolbar">
+      <span class="infografia-hint">🤏 Pellizca o usa la rueda del mouse para ampliar · arrastra para mover</span>
+      <a class="infografia-descargar" href="ruta-atencion-infografia.jpg" download>⬇ Descargar</a>
+      <button class="infografia-cerrar" onclick="cerrarInfografia()" aria-label="Cerrar infografía">✕</button>
+    </div>
+    <div class="infografia-lienzo" id="infografiaLienzo">
+      <img id="infografiaImg" src="ruta-atencion-infografia.jpg" alt="Infografía de la ruta de atención en convivencia escolar" draggable="false">
+    </div>
   </div>
   </div>
 
@@ -715,6 +828,22 @@
   });
   const dots = document.querySelectorAll('.dot');
 
+  function reflexionCompletada(){
+    const campo = document.getElementById('reflexionInicial');
+    return !!(campo && campo.value.trim().length > 0);
+  }
+
+  function actualizarBloqueoReflexion(){
+    const nextBtn = document.getElementById('nextBtn');
+    const aviso = document.getElementById('avisoReflexion');
+    if (actual !== 0) return; // el bloqueo solo aplica en la diapositiva 1
+    const completa = reflexionCompletada();
+    nextBtn.disabled = !completa;
+    if (aviso) aviso.classList.toggle('oculto', completa);
+  }
+  const reflexionInicialEl = document.getElementById('reflexionInicial');
+  if (reflexionInicialEl) reflexionInicialEl.addEventListener('input', actualizarBloqueoReflexion);
+
   function mostrarSlide(i){
     slides.forEach((s, idx) => s.classList.toggle('active', idx === i));
     dots.forEach((d, idx) => d.classList.toggle('active', idx === i));
@@ -723,13 +852,23 @@
     document.getElementById('prevBtn').disabled = i === 0;
     document.getElementById('nextBtn').textContent = (i === total-1) ? 'Finalizar' : 'Siguiente';
     cerrarBurbuja();
+    if (i === 0) {
+      actualizarBloqueoReflexion();
+    } else {
+      document.getElementById('nextBtn').disabled = false;
+    }
     if (slides[i].id === 'slideRegistro') prepararSlideRegistro();
-    if (i === total - 2) mostrarEcoReflexion();
+    if (slides[i].id === 'slideCierre') mostrarEcoReflexion();
   }
 
   function cambiarSlide(dir){
+    if (actual === 0 && dir === 1 && !reflexionCompletada()) {
+      actualizarBloqueoReflexion();
+      document.getElementById('reflexionInicial').focus();
+      return;
+    }
     if (actual === total - 1 && dir === 1) {
-      alert('¡Gracias por completar el curso! No olvides responder el Desafío Liceito (diapositiva 10) para quedar registrado.');
+      alert('¡Gracias por completar el curso! Recuerda responder el Desafío Liceito y registrar tu asistencia con el formulario de esta última pantalla.');
       return;
     }
     actual = Math.min(Math.max(actual + dir, 0), total - 1);
@@ -951,6 +1090,98 @@
       const i = parseInt(btn.dataset.step, 10);
       rutaDetalle.innerHTML = '<p>' + rutaContenido[i] + '</p>';
     });
+  });
+
+  // ---------- Lightbox de la infografía: abrir/cerrar/zoom/pan ----------
+  const infOverlay = document.getElementById('infografiaOverlay');
+  const infLienzo   = document.getElementById('infografiaLienzo');
+  const infImg      = document.getElementById('infografiaImg');
+
+  let infScale = 1, infOffsetX = 0, infOffsetY = 0;
+  const INF_MIN = 1, INF_MAX = 5;
+
+  function aplicarTransformInfografia(){
+    infImg.style.transform =
+      'translate(-50%, -50%) translate(' + infOffsetX + 'px, ' + infOffsetY + 'px) scale(' + infScale + ')';
+  }
+
+  function abrirInfografia(){
+    infScale = 1; infOffsetX = 0; infOffsetY = 0;
+    aplicarTransformInfografia();
+    infOverlay.classList.add('show');
+    document.body.style.overflow = 'hidden'; // evita que la página se mueva detrás del lightbox
+  }
+  function cerrarInfografia(){
+    infOverlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  // Zoom con rueda del mouse (escritorio)
+  infLienzo.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 1.15 : 1/1.15;
+    infScale = Math.min(INF_MAX, Math.max(INF_MIN, infScale * delta));
+    aplicarTransformInfografia();
+  }, { passive:false });
+
+  // Doble clic / doble toque: alterna entre 1x y 2.5x
+  infLienzo.addEventListener('dblclick', () => {
+    if (infScale > 1) { infScale = 1; infOffsetX = 0; infOffsetY = 0; }
+    else { infScale = 2.5; }
+    aplicarTransformInfografia();
+  });
+
+  // Arrastrar para desplazar (mouse y un dedo) + pellizcar con dos dedos (móvil)
+  const punterosActivos = new Map();
+  let distanciaPellizcoInicial = null;
+  let escalaAlIniciarPellizco = 1;
+  let arrastrando = false, arrastreInicioX = 0, arrastreInicioY = 0, offsetInicioX = 0, offsetInicioY = 0;
+
+  infLienzo.addEventListener('pointerdown', (e) => {
+    punterosActivos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    infLienzo.setPointerCapture(e.pointerId);
+    if (punterosActivos.size === 1) {
+      arrastrando = true;
+      infLienzo.classList.add('arrastrando');
+      arrastreInicioX = e.clientX; arrastreInicioY = e.clientY;
+      offsetInicioX = infOffsetX; offsetInicioY = infOffsetY;
+    } else if (punterosActivos.size === 2) {
+      arrastrando = false; // dos dedos = pellizco, no arrastre
+      const [p1, p2] = [...punterosActivos.values()];
+      distanciaPellizcoInicial = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      escalaAlIniciarPellizco = infScale;
+    }
+  });
+
+  infLienzo.addEventListener('pointermove', (e) => {
+    if (!punterosActivos.has(e.pointerId)) return;
+    punterosActivos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    if (punterosActivos.size === 2 && distanciaPellizcoInicial) {
+      const [p1, p2] = [...punterosActivos.values()];
+      const distanciaActual = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+      infScale = Math.min(INF_MAX, Math.max(INF_MIN,
+        escalaAlIniciarPellizco * (distanciaActual / distanciaPellizcoInicial)));
+      aplicarTransformInfografia();
+    } else if (arrastrando) {
+      infOffsetX = offsetInicioX + (e.clientX - arrastreInicioX);
+      infOffsetY = offsetInicioY + (e.clientY - arrastreInicioY);
+      aplicarTransformInfografia();
+    }
+  });
+
+  function soltarPuntero(e){
+    punterosActivos.delete(e.pointerId);
+    if (punterosActivos.size < 2) distanciaPellizcoInicial = null;
+    if (punterosActivos.size === 0) { arrastrando = false; infLienzo.classList.remove('arrastrando'); }
+  }
+  infLienzo.addEventListener('pointerup', soltarPuntero);
+  infLienzo.addEventListener('pointercancel', soltarPuntero);
+  infLienzo.addEventListener('pointerleave', soltarPuntero);
+
+  // Cerrar con la tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && infOverlay.classList.contains('show')) cerrarInfografia();
   });
 
   // ---------- Pestañas Tipo 1 / 2 / 3 (Slide 6) ----------
