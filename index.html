@@ -371,6 +371,7 @@
   }
 
   /* ---------- Botón para abrir la infografía ---------- */
+
   .btn-infografia{
     display:block;margin:18px auto 8px;padding:11px 22px;border-radius:22px;
     border:1.5px solid var(--azul-principal);background:transparent;color:var(--azul-principal);
@@ -570,10 +571,16 @@
         <p>👆 Toca un paso de la línea para ver en qué consiste.</p>
       </div>
 
-      <button class="btn-infografia" onclick="abrirInfografia()">🔍 Ver infografía completa de la ruta</button>
+      <button class="btn-infografia" onclick="abrirInfografia('ruta-atencion-infografia.jpg')">🔍 Ver    
+      infografía completa de la ruta del Liceo</button>
+
+  
+      <button class="btn-infografia" onclick="abrirInfografia('ruta-atencion-MN.jpeg')">🔍 Ver infografía    
+      completa de la ruta de Ministerio de Educación</button>
 
       <button class="narrar-btn" onclick="hablarLiceito(this)">💬 Ver mensaje de Liceito</button>
     </section>
+
 
     <!-- ============================================================ -->
     <!--  DIAPOSITIVA 6 — Clasificación Tipo 1 / 2 / 3 (interactiva)
@@ -581,7 +588,8 @@
     <!-- ============================================================ -->
     <section class="slide" data-narracion="Las situaciones no reciben la misma respuesta. La clasificación depende de la gravedad y del impacto en los involucrados, según el Manual de Convivencia y la normativa vigente. Elige cada tipo para ver su definición y el protocolo que aplicamos.">
       <div class="eyebrow">Clasificación</div>
-      <h2>No todas las situaciones son iguales</h2>
+      <h2>No todas las situaciones tienen el mismo manejo</h2>
+      <h3>Por esta razón es necesario tipificarlas</h3>
 
       <div class="tipo-tabs" id="tipoTabs">
         <button class="tipo-tab active" data-tipo="1">Tipo 1</button>
@@ -596,7 +604,7 @@
       <p class="quote">Cada situación recibe una respuesta diferente.</p>
 
       <div class="case-box" style="text-align:left;">
-        <p style="margin:0 0 8px;">El Liceo considera fundamental que la tipificación de las faltas se realice teniendo en cuenta criterios <strong>atenuantes</strong> y <strong>agravantes</strong> que permitan individualizar la responsabilidad en la comisión de faltas y la participación en situaciones, de manera que se puedan establecer las sanciones a aplicar; cuya reincidencia generará una mayor tipificación o rango en la aplicación de una sanción.</p>
+        <p style="margin:0 0 8px;">El Liceo considera fundamental que la tipificación de las faltas se realice teniendo en cuenta criterios <strong>atenuantes</strong> y <strong>agravantes</strong> que permitan individualizar la responsabilidad en la comisión de faltas y la participación en situaciones, de manera que se puedan establecer las medidas a aplicar; cuya reincidencia generará una mayor tipificación o rango en la aplicación de una sanción.</p>
         <p style="margin:0;font-size:.82rem;color:var(--texto-suave);">Para mayor comprensión, remítase al artículo 32 del Manual de Convivencia (página 76).</p>
       </div>
 
@@ -691,7 +699,8 @@
       <img src="liceito.png" width="200" height="200" alt="Mi imagen">
       <div class="eyebrow"> Desafío Liceito</div>
       <h2 id="quizTitulo">Ahora te invito a responder algunas situaciones</h2>
-      <p class="body-text" id="quizIntro">No es un examen. Es una oportunidad para reflexionar sobre lo aprendido. Al final te daremos una nota que deberás registrar en el formulario de asistencia.</p>
+      <p class="body-text" id="quizIntro">No es un examen. Es una oportunidad para reflexionar sobre lo aprendido. Al final te daremos un puntaje que deberás registrar en el formulario de asistencia.</p>
+      <h3 id="quizTitulo">POR FAVOR TENERLO EN CUENTA</h3>
 
       <div id="quizArea"></div>
 
@@ -773,7 +782,7 @@
   <div id="infografiaOverlay" class="infografia-overlay" onclick="if(event.target===this) cerrarInfografia()">
     <div class="infografia-toolbar">
       <span class="infografia-hint">🤏 Pellizca o usa la rueda del mouse para ampliar · arrastra para mover</span>
-      <a class="infografia-descargar" href="ruta-atencion-infografia.jpg" download>⬇ Descargar</a>
+      <a class="infografia-descargar" id="infografiaDescargar" href="ruta-atencion-infografia.jpg" download>⬇ Descargar</a>
       <button class="infografia-cerrar" onclick="cerrarInfografia()" aria-label="Cerrar infografía">✕</button>
     </div>
     <div class="infografia-lienzo" id="infografiaLienzo">
@@ -911,14 +920,14 @@
     {
       caso: "Un estudiante es excluido sistemáticamente por su grupo de curso: no lo dejan participar en actividades y se burlan de forma constante.",
       pregunta: "¿Qué debe hacer un padre que se entera de esto?",
-      opciones: ["Resolverlo directamente con los otros padres", "Informar al colegio para activar la ruta correspondiente", "Esperar a que se resuelva solo", "Cambiar al estudiante de colegio de inmediato"],
+      opciones: ["Resolverlo directamente con los otros padres", "Informar al colegio para indargar y así activar la ruta correspondiente", "Esperar a que se resuelva solo", "Cambiar al estudiante de colegio de inmediato"],
       correcta: 1,
       feedback: "Informar al colegio permite activar el protocolo adecuado; los patrones sostenidos de exclusión requieren seguimiento institucional."
     },
     {
       caso: "Un estudiante amenaza a otro con un objeto que puede causar daño físico grave.",
       pregunta: "¿Qué tipo de situación es?",
-      opciones: ["Tipo I", "Tipo II", "Tipo III — se activan autoridades competentes", "Un malentendido sin importancia"],
+      opciones: ["Tipo I", "Tipo II", "Tipo III — se activan autoridades competentes y entes externos", "Un malentendido sin importancia"],
       correcta: 2,
       feedback: "Cuando hay riesgo grave para la integridad física, se activan autoridades competentes de inmediato."
     },
@@ -1105,7 +1114,9 @@
       'translate(-50%, -50%) translate(' + infOffsetX + 'px, ' + infOffsetY + 'px) scale(' + infScale + ')';
   }
 
-  function abrirInfografia(){
+  function abrirInfografia(archivo){
+  infImg.src = archivo;
+  document.getElementById('infografiaDescargar').href = archivo;
     infScale = 1; infOffsetX = 0; infOffsetY = 0;
     aplicarTransformInfografia();
     infOverlay.classList.add('show');
@@ -1189,40 +1200,37 @@
     1: {
       def: "Conflictos manejados de forma inadecuada y situaciones esporádicas que inciden negativamente en el clima escolar, pero que en ningún caso generan daño al cuerpo o a la salud física o mental de los involucrados.",
       checklist: [
-        "Brindar atención inmediata en salud física y mental a los afectados",
-        "Toma de relato y recopilación de la información del caso",
-        "Informar de manera inmediata a los padres y/o acudientes",
-        "Informar la situación a entes externos, si aplica",
-        "Citar a los integrantes del Comité de Convivencia Escolar y poner en su conocimiento el caso",
-        "Registrar el reporte en el sistema de información unificada de convivencia escolar",
-        "Realizar seguimiento por parte del Comité de Convivencia (y entes externos, si aplica)",
-        "Hacer seguimiento hasta lograr el restablecimiento de los derechos de los involucrados"
+        "Mediar de manera Pedagógica",
+        "Llevar a cabo acciones pedagógicas y restaurativas para la reparación de los daños causados, el restablecimiento de los derechos y la reconciliación",
+        "Establecer compromisos y acuerdos",
+        "Hacer seguimientos",
+        "Remitir al departamento de Orientación Escolar cuando el caso lo amerite",
+        "Reportar las medidas y acciones pedagógicas a los padres de familia",
+        "Seguimiento y cierre de caso",
       ]
     },
     2: {
       def: "Situaciones de agresión escolar, acoso escolar y ciberacoso que no reúnen las características de la comisión de un delito, y que cumplen con: a) presentarse de manera repetida o sistemática, y b) causar daño al cuerpo o a la salud física sin generar incapacidad alguna.",
       checklist: [
-        "Brindar atención inmediata en salud física y mental a los afectados",
+        "Brindar atención inmediata en salud física y psicológica a los afectados",
         "Toma de relato y recopilación de la información del caso",
         "Informar de manera inmediata a los padres y/o acudientes",
-        "Informar la situación a entes externos, según corresponda",
-        "Reportar la situación al sistema de información unificada de convivencia escolar",
-        "Citar a los integrantes del Comité de Convivencia Escolar y poner en su conocimiento el caso",
-        "Realizar seguimiento por parte del Comité de Convivencia y de los entes externos, si aplica",
-        "Hacer seguimiento hasta lograr el restablecimiento de los derechos de los involucrados"
+        "Informar la situación a entes externos, según corresponda, si el caso así lo requiere",
+        "Remitir al departamento de Orientación Escolar",
+        "Reportar las medidas y acciones pedagógicas a padres de familia",
+        "Seguimiento hasta lograr el restablecimiento de los derechos de los involucrados y cierre de caso"
       ]
     },
     3: {
       def: "Situaciones que sean constitutivas de presuntos delitos contra la libertad, integridad y formación sexual.",
       checklist: [
-        "Brindar atención inmediata en salud física y mental a los afectados",
+        "Brindar atención inmediata en salud física y psicológica a los afectados",
         "Toma de relato y recopilación de la información del caso",
         "Informar de manera inmediata a los padres y/o acudientes",
+        "Remitir al departamento de Orientación Escolar",
         "Informar la situación a entes externos competentes (obligatorio en este tipo)",
-        "Citar a los integrantes del Comité de Convivencia Escolar y poner en su conocimiento el caso",
-        "Registrar el reporte en el sistema de información unificada de convivencia escolar",
-        "Realizar seguimiento por parte del Comité de Convivencia y de los entes externos competentes",
-        "Hacer seguimiento hasta lograr el restablecimiento de los derechos de los involucrados"
+        "Reportar las medidas y acciones pedagógicas a padres de familia",
+        "Seguimiento hasta lograr el restablecimiento de los derechos de los involucrados y cierre de caso"
       ]
     }
   };
